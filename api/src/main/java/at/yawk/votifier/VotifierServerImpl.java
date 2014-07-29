@@ -3,6 +3,7 @@ package at.yawk.votifier;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.SocketAddress;
 import java.security.PrivateKey;
@@ -14,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * @author yawkat
  */
-class VotifierServerImpl implements ChannelHandler, VotifierServer {
+class VotifierServerImpl implements ChannelInitializer<SocketChannel>, VotifierServer {
     private final Logger logger;
     private final VotifierVersion version;
     private final SocketAddress listenAddress;
@@ -77,8 +78,22 @@ class VotifierServerImpl implements ChannelHandler, VotifierServer {
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        ctx.pipeline()
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        logger.fine("Client disconnected.");
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        handleError(cause);
+    }
+
+    private void handleError(Throwable cause) {
+        logger.log(Level.WARNING, "Error while handling votifier message", cause);
+    }
+
+    @Override
+    protected void initChannel(SocketChannel ch) throws Exception {
+        ch.pipeline()
                 .addLast(new VoteDecrypter(key))
                 .addLast(new LineSplitter())
                 .addLast(new VoteDecoder())
@@ -104,20 +119,6 @@ class VotifierServerImpl implements ChannelHandler, VotifierServer {
                 });
 
         logger.info("Client connected: Sending version packet.");
-        ctx.channel().writeAndFlush(version);
-    }
-
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        logger.fine("Client disconnected.");
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        handleError(cause);
-    }
-
-    private void handleError(Throwable cause) {
-        logger.log(Level.WARNING, "Error while handling votifier message", cause);
+        ch.writeAndFlush(version);
     }
 }
