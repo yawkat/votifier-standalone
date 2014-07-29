@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  * @author yawkat
  */
 public class VotifierServerBuilder {
-    private Logger logger = Logger.getLogger("at.yawk.votifier.votifier");
+    private Logger logger = Logger.getLogger("at.yawk.votifier");
     private PrivateKey key = null;
     private VotifierVersion version = VotifierVersion.getDefault();
     private InetSocketAddress listenAddress = InetSocketAddress.createUnresolved("0.0.0.0", 8192);
