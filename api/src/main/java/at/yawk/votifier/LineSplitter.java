@@ -3,6 +3,7 @@ package at.yawk.votifier;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ class LineSplitter extends ByteToMessageDecoder {
             byte[] line = new byte[lineLength];
             in.readBytes(line);
             in.readByte(); // newline
-            out.add(line);
+            out.add(new String(line, StandardCharsets.UTF_8));
         }
     }
 }

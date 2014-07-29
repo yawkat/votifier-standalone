@@ -15,7 +15,7 @@ class VoteDecoder extends MessageToMessageDecoder<String> {
     @Override
     protected void decode(ChannelHandlerContext ctx, String msg, List<Object> out) throws Exception {
         lines.add(msg);
-        while (lines.size() > 5) {
+        while (lines.size() >= 5) {
             String op = lines.poll();
             String username = lines.poll();
             String service = lines.poll();
