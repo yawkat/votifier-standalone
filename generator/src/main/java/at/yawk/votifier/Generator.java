@@ -1,6 +1,5 @@
-package at.yawk.votifier.votifier;
+package at.yawk.votifier;
 
-import at.yawk.votifier.VotifierKeyPair;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

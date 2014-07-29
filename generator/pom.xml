@@ -35,7 +35,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>at.yawk.votifier.votifier.Generator</mainClass>
+                                    <mainClass>at.yawk.votifier.Generator</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
