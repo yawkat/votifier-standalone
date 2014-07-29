@@ -84,6 +84,7 @@ class VotifierServerImpl implements VotifierServer {
                                                                           operation.getService(),
                                                                           operation.getAddress(),
                                                                           operation.getTimestamp()));
+                                            ctx.channel().close();
                                         } else {
                                             throw new UnsupportedOperationException(operation.getOperation());
                                         }
