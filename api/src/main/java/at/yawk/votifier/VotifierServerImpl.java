@@ -96,6 +96,11 @@ class VotifierServerImpl implements ChannelHandler, VotifierServer {
                             throw new UnsupportedOperationException(operation.getOperation());
                         }
                     }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                        handleError(cause);
+                    }
                 });
 
         logger.info("Client connected: Sending version packet.");
@@ -109,6 +114,10 @@ class VotifierServerImpl implements ChannelHandler, VotifierServer {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        handleError(cause);
+    }
+
+    private void handleError(Throwable cause) {
         logger.log(Level.WARNING, "Error while handling votifier message", cause);
     }
 }
