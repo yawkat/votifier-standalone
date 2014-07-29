@@ -75,6 +75,9 @@ class VotifierServerImpl implements VotifierServer {
                                 .addLast(new ChannelInboundHandlerAdapter() {
                                     @Override
                                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                        if (!(msg instanceof Operation)) {
+                                            return;
+                                        }
                                         Operation operation = (Operation) msg;
                                         if (operation.getOperation().equals("VOTE")) {
                                             listener.accept(new VoteEvent(operation.getUsername(),
