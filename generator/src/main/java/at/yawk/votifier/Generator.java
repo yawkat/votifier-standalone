@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 /**
  * @author yawkat
  */
-class Generator {
+public class Generator {
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.err.println("Usage: java -cp <filename> " + Generator.class.getName() +
