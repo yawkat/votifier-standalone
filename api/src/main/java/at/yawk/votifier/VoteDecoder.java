@@ -17,8 +17,8 @@ class VoteDecoder extends MessageToMessageDecoder<String> {
         lines.add(msg);
         while (lines.size() >= 5) {
             String op = lines.poll();
-            String username = lines.poll();
             String service = lines.poll();
+            String username = lines.poll();
             String address = lines.poll();
             String timestamp = lines.poll();
             out.add(new Operation(op, username, service, address, timestamp));
