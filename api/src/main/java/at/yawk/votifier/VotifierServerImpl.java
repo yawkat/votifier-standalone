@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 /**
  * @author yawkat
  */
-class VotifierServerImpl implements ChannelInitializer<SocketChannel>, VotifierServer {
+class VotifierServerImpl implements VotifierServer {
     private final Logger logger;
     private final VotifierVersion version;
     private final SocketAddress listenAddress;
@@ -54,7 +54,49 @@ class VotifierServerImpl implements ChannelInitializer<SocketChannel>, VotifierS
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childHandler(this);
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+                        logger.fine("Client disconnected.");
+                    }
+
+                    @Override
+                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                        handleError(cause);
+                    }
+
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ch.pipeline()
+                                .addLast(new VoteDecrypter(key))
+                                .addLast(new LineSplitter())
+                                .addLast(new VoteDecoder())
+                                .addLast(new VersionEncoder())
+                                .addLast(new ChannelInboundHandlerAdapter() {
+                                    @Override
+                                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                        Operation operation = (Operation) msg;
+                                        if (operation.getOperation().equals("VOTE")) {
+                                            listener.accept(new VoteEvent(operation.getUsername(),
+                                                                          operation.getService(),
+                                                                          operation.getAddress(),
+                                                                          operation.getTimestamp()));
+                                        } else {
+                                            throw new UnsupportedOperationException(operation.getOperation());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+                                            throws Exception {
+                                        handleError(cause);
+                                    }
+                                });
+
+                        logger.info("Client connected: Sending version packet.");
+                        ch.writeAndFlush(version);
+                    }
+                });
     }
 
     @Override
@@ -77,48 +119,7 @@ class VotifierServerImpl implements ChannelInitializer<SocketChannel>, VotifierS
         boundChannel = null;
     }
 
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        logger.fine("Client disconnected.");
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        handleError(cause);
-    }
-
     private void handleError(Throwable cause) {
         logger.log(Level.WARNING, "Error while handling votifier message", cause);
-    }
-
-    @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
-        ch.pipeline()
-                .addLast(new VoteDecrypter(key))
-                .addLast(new LineSplitter())
-                .addLast(new VoteDecoder())
-                .addLast(new VersionEncoder())
-                .addLast(new ChannelInboundHandlerAdapter() {
-                    @Override
-                    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                        Operation operation = (Operation) msg;
-                        if (operation.getOperation().equals("VOTE")) {
-                            listener.accept(new VoteEvent(operation.getUsername(),
-                                                          operation.getService(),
-                                                          operation.getAddress(),
-                                                          operation.getTimestamp()));
-                        } else {
-                            throw new UnsupportedOperationException(operation.getOperation());
-                        }
-                    }
-
-                    @Override
-                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                        handleError(cause);
-                    }
-                });
-
-        logger.info("Client connected: Sending version packet.");
-        ch.writeAndFlush(version);
     }
 }
