@@ -14,6 +14,8 @@ import java.util.Base64;
 import java.util.Objects;
 
 /**
+ * KeyPair wrapper with votifier serialization and generation methods.
+ *
  * @author yawkat
  */
 public class VotifierKeyPair {

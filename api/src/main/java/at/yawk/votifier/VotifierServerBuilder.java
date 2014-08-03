@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
+ * Builder for a VotifierServer instance.
+ *
  * @author yawkat
  */
 public class VotifierServerBuilder {
@@ -64,6 +66,9 @@ public class VotifierServerBuilder {
         return new VotifierServerImpl(logger, version, listenAddress, key, voteListener);
     }
 
+    /**
+     * build() and start the server.
+     */
     public VotifierServer start() {
         VotifierServer server = build();
         server.start();
